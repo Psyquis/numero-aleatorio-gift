@@ -1,0 +1,49 @@
+import random
+import os
+from PIL import Image, ImageDraw
+from github import Github
+
+# Función para generar un GIF con un número aleatorio del 00 al 99 y guardarlo
+def generar_gif_y_guardar():
+    numero = '{:02d}'.format(random.randint(0, 99))  # Genera un número aleatorio entre 00 y 99
+    
+    # Configuración de tamaño de imagen
+    width, height = 200, 200
+    
+    # Función para generar el cuadro con el número
+    def generate_frame():
+        img = Image.new('RGB', (width, height), color='white')
+        draw = ImageDraw.Draw(img)
+        draw.text((width // 2, height // 2), numero, fill='black')
+        return img
+
+    # Generar los cuadros y guardarlos como GIF
+    frames = []
+    for _ in range(10):  # Número de cuadros en el GIF
+        frame = generate_frame()
+        frames.append(frame)
+
+    # Guardar el GIF en el directorio actual
+    ruta_actual = os.getcwd()
+    gif_path = os.path.join(ruta_actual, 'random_number.gif')
+    frames[0].save(gif_path, save_all=True, append_images=frames[1:], duration=500, loop=0) # Duración en milisegundos (0.5 segundos)
+
+    return gif_path
+
+# Generar el GIF
+gif_path = generar_gif_y_guardar()
+
+# Subir el GIF a GitHub
+def subir_gif_a_github(gif_path, repo_nombre, repo_ruta, usuario, token):
+    g = Github(usuario, token)
+    repo = g.get_user().create_repo(repo_nombre)
+    with open(gif_path, 'rb') as file:
+        content = file.read()
+    repo.create_file(repo_ruta, "random_number.gif", content, "Subiendo GIF generado")
+
+# Datos para la autenticación en GitHub
+usuario = 'tu_usuario'
+token = 'tu_token'
+
+# Llamar a la función para subir el GIF a GitHub
+subir_gif_a_github(gif_path, 'nombre_del_repo', 'random_number.gif', usuario, token)
